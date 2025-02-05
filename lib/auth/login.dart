@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'signin.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,12 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
-                    // Add your sign-in action here
+                    var Future()= Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                        builder: (context) => const SignInPage(),
+                    )
+                    );// Add your sign-in action here
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
@@ -92,3 +98,5 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
+
+
