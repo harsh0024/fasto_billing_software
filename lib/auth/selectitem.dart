@@ -10,11 +10,11 @@ class _SelectItemPageState extends State<SelectItemPage> {
   int selectedCategoryIndex = 0;
 
   List<Map<String, dynamic>> items = [
-    {"name": "Samosa", "image": "lib/images/google.png", "count": 2},
-    {"name": "Kachori", "image": "lib/images/google.png", "count": 0},
-    {"name": "Pakode", "image": "lib/images/google.png", "count": 0},
-    {"name": "Sambarvadi", "image": "lib/images/google.png", "count": 0},
-    {"name": "Chai", "image": "lib/images/google.png", "count": 0},
+    {"name": "Samosa", "image": "lib/images/samosa.png", "count": 5},
+    {"name": "Kachori", "image": "lib/images/kachori.png", "count": 0},
+    {"name": "Pakode", "image": "lib/images/pakode.jpg", "count": 0},
+    {"name": "Sambarvadi", "image": "lib/images/sambarvadi.jpg", "count": 0},
+    {"name": "Chai", "image": "lib/images/chai.png", "count": 0},
   ];
 
   int totalAmount = 20;
@@ -29,23 +29,23 @@ class _SelectItemPageState extends State<SelectItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select Items", style: TextStyle(fontSize: 15)),
-        backgroundColor: Colors.purple.shade200,
+        title: Text("Select Items", style: TextStyle(fontSize: 20,color: Colors.white)),
+        backgroundColor: const Color(0xFFB239D3),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back,color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.search,color: Colors.white),
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(Icons.qr_code_scanner),
+            icon: Icon(Icons.qr_code_scanner,color: Colors.white),
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(Icons.calculate),
+            icon: Icon(Icons.calculate,color: Colors.white),
             onPressed: () {},
           ),
         ],
@@ -107,12 +107,12 @@ class _SelectItemPageState extends State<SelectItemPage> {
                   // Items Grid
                   Expanded(
                     child: GridView.builder(
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(8),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3, // 3 items per row
-                        childAspectRatio: 0.9, // Adjust for proper spacing
-                        crossAxisSpacing: 8,//horizontal spacing
-                        mainAxisSpacing: 12, //vertical spacing
+                        crossAxisCount: 2, // 2 items per row
+                        childAspectRatio: 0.8, // Adjust for proper spacing
+                        crossAxisSpacing: 10, // Space between columns
+                        mainAxisSpacing: 12, // Space between rows
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
@@ -121,40 +121,73 @@ class _SelectItemPageState extends State<SelectItemPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: Colors.black45),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black26, blurRadius: 2, offset: Offset(1, 2))
+                            ],
                           ),
+                          padding: EdgeInsets.all(10), // Added padding inside the container
                           child: Column(
-                            //mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between elements
+                            mainAxisAlignment: MainAxisAlignment.center, // Centers everything
                             children: [
                               Flexible(
-                                child: Image.asset(items[index]['image'], height: 34), // Reduced image size
+                                child: Image.asset(items[index]['image'], height: 100), // Increased image size
                               ), // Item Image
-                              SizedBox(height: 5),
+
                               Text(
                                 items[index]['name'],
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
-                               // Pushes the buttons to the bottom
-                              SizedBox(height: 5), // Added a small gap
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 5), // Adjust spacing if needed
+
+                              // SizedBox(height: 8),
+
+                              // Counter Buttons (Add & Remove) - FIXED OVERFLOW
+                              FittedBox(
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center, // Centering the buttons
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ensures spacing
                                   children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove, size: 12, color: Colors.red),
-                                      onPressed: () => updateItemCount(index, -1),
-                                      padding: EdgeInsets.zero, // Removes extra padding
-                                      constraints: BoxConstraints(), // Avoids overflow
+                                    // Remove (-) button in a box
+                                    Container(
+                                      width: 30, // Box width
+                                      height: 30, // Box height
+                                      decoration: BoxDecoration(
+                                        color: Colors.white, // Background color
+                                        borderRadius: BorderRadius.circular(6), // Rounded corners
+                                        border: Border.all(color: Colors.red, width: 1.2), // Red border
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.remove, size: 20, color: Colors.red),
+                                        onPressed: () => updateItemCount(index, -1),
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(),
+                                      ),
                                     ),
+
+                                    SizedBox(width: 10), // Space between elements
+
+                                    // Item count text
                                     Text(
                                       items[index]['count'].toString(),
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.add, size: 12, color: Colors.green),
-                                      onPressed: () => updateItemCount(index, 1),
-                                      padding: EdgeInsets.zero, // Removes extra padding
-                                      constraints: BoxConstraints(), // Avoids overflow
+
+                                    SizedBox(width: 10), // Space between elements
+
+                                    // Add (+) button in a box
+                                    Container(
+                                      width: 30, // Box width
+                                      height: 30, // Box height
+                                      decoration: BoxDecoration(
+                                        color: Colors.white, // Background color
+                                        borderRadius: BorderRadius.circular(6), // Rounded corners
+                                        border: Border.all(color: Colors.green, width: 1.2), // Green border
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.add, size: 20, color: Colors.green),
+                                        onPressed: () => updateItemCount(index, 1),
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -274,7 +307,6 @@ class _SelectItemPageState extends State<SelectItemPage> {
           ),
         ),
       ),
-
     );
   }
 }

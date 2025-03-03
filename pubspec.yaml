@@ -65,9 +65,11 @@ flutter:
     - lib/images/facebookiconimg.png
     - lib/images/appleiconimg.png
     - lib/images/google.png
-
-
-
+    - lib/images/samosa.png
+    - lib/images/chai.png
+    - lib/images/pakode.jpg
+    - lib/images/sambarvadi.jpg
+    - lib/images/kachori.png
 
 
 
