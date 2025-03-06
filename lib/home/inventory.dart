@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'modifyitem.dart';
 import 'newitem.dart';
 
 class InventoryPage extends StatefulWidget {
@@ -12,11 +10,11 @@ class InventoryPage extends StatefulWidget {
 
 class _InventoryPageState extends State<InventoryPage> {
   List<Map<String, dynamic>> items = [
-    {"name": "Samosa", "image": "lib/images/samosa.png","stock": 5, "price": 20},
-    {"name": "Kachori", "image": "lib/images/kachori.png", "stock": 0, "price": 20},
-    {"name": "Pakode", "image": "lib/images/pakode.jpg", "stock": 50, "price": 30},
-    {"name": "Sambarvadi", "image": "lib/images/sambarvadi.jpg", "stock": 10, "price": 40},
-    {"name": "Chai", "image": "lib/images/chai.png", "stock": 10, "price": 10},
+    {'name': 'Samosa', 'price': 10, 'stock': 200, 'image': 'lib/images/samosa.png'},
+    {'name': 'Kachori', 'price': 15, 'stock': 200, 'image': 'lib/images/kachori.png'},
+    {'name': 'Pakode', 'price': 30, 'stock': 200, 'image': 'lib/images/pakode.jpg'},
+    {'name': 'Sambarvadi', 'price': 30, 'stock': 200, 'image': 'lib/images/sambarvadi.jpg'},
+    {'name': 'Chai', 'price': 10, 'stock': 200, 'image': 'lib/images/chai.png'},
   ];
 
   @override
@@ -27,16 +25,11 @@ class _InventoryPageState extends State<InventoryPage> {
 
   Future<void> _loadInventory() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String>? savedItems = prefs.getStringList("inventory_items");
+    List<String> savedItems = prefs.getStringList("inventory_items") ?? [];
 
-    if (savedItems == null || savedItems.isEmpty) {
-      // If no items are stored, save predefined items
-      await _saveInventory(); //save predefined items if empty
-    } else {
-      setState(() {
-        items = savedItems.map((item) => jsonDecode(item) as Map<String, dynamic>).toList();
-      });
-    }
+    setState(() {
+      items.addAll(savedItems.map((item) => jsonDecode(item) as Map<String, dynamic>));
+    });
   }
 
   Future<void> _saveInventory() async {
@@ -44,7 +37,6 @@ class _InventoryPageState extends State<InventoryPage> {
     List<String> savedItems = items.map((item) => jsonEncode(item)).toList();
     await prefs.setStringList("inventory_items", savedItems);
   }
-
 
   void addItem(Map<String, dynamic> newItem) {
     setState(() {
@@ -58,11 +50,8 @@ class _InventoryPageState extends State<InventoryPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: Text(
-          "Item List",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF6A1B9A),
+        title: Text("Item List", style: TextStyle(fontSize: 18, color: Colors.white)),
+        backgroundColor: Color(0xFFB239D3),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -87,10 +76,7 @@ class _InventoryPageState extends State<InventoryPage> {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: Text(
-                "NEW ITEM",
-                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-              ),
+              child: Text("NEW ITEM", style: TextStyle(color: Colors.white, fontSize: 12)),
             ),
           )
         ],
@@ -98,67 +84,56 @@ class _InventoryPageState extends State<InventoryPage> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(10),
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 15),
+              padding: EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade300),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade200,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
               ),
               child: Center(
-                child: Text(
-                  "Inventory",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+                child: Text("Inventory", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
           ),
 
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 10),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
                   // Implement filter functionality
                 },
-                icon: Icon(Icons.filter_list, color: Colors.black, size: 20),
+                icon: Icon(Icons.filter_list, color: Colors.black, size: 18),
                 label: Text("FILTER", style: TextStyle(color: Colors.black, fontSize: 14)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  elevation: 3,
+                  elevation: 2,
                 ),
               ),
             ),
           ),
 
-          SizedBox(height: 10),
-
+          SizedBox(height: 8),
           Expanded(
             child: items.isEmpty
-                ? Center(child: Text("No items in inventory", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))
+                ? Center(child: Text("No items in inventory"))
                 : ListView.builder(
-              padding: EdgeInsets.all(12),
+              padding: EdgeInsets.all(10),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 return Container(
-                  margin: EdgeInsets.symmetric(vertical: 6),
-                  padding: EdgeInsets.all(12),
+                  margin: EdgeInsets.symmetric(vertical: 5),
+                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey.shade300,
@@ -170,54 +145,35 @@ class _InventoryPageState extends State<InventoryPage> {
                   child: Row(
                     children: [
                       Container(
-                        height: 70,
-                        width: 70,
+                        height: 60,
+                        width: 60,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                           color: Colors.grey[200],
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.shade200,
-                              blurRadius: 5,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: items[index]['image'].startsWith('lib/images/')
-                              ? Image.asset(
-                            items[index]['image'], // ✅ Load asset image
-                            height: 70,
-                            width: 70,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            items[index]['image'],
+                            height: 60,
+                            width: 60,
                             fit: BoxFit.cover,
-                          )
-                              : Image.file(
-                            File(items[index]['image']), // ✅ Load user-selected image
-                            height: 70,
-                            width: 70,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.broken_image, size: 70, color: Colors.grey); // Handle errors
-                            },
                           ),
                         ),
                       ),
-
-                      SizedBox(width: 12),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               items[index]['name'],
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 4),
                             Text(
-                              "Stock: ${items[index]['stock']}",
-                              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                              "Current Stock: ${items[index]['stock']}",
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -226,39 +182,25 @@ class _InventoryPageState extends State<InventoryPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "Rs. ${items[index]['price']}",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            "Rs ${items[index]['price']}",
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 6),
+                          SizedBox(height: 5),
                           SizedBox(
-                            width: 100,
-                            height: 35,
+                            width: 90,
+                            height: 30,
                             child: ElevatedButton(
-                              onPressed: () async {
-                                final modifiedItem = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ModifyItemPage(item: items[index]),
-                                  ),
-                                );
-
-                                if (modifiedItem != null) {
-                                  setState(() {
-                                    items[index] = modifiedItem; // Update modified item
-                                  });
-                                  _saveInventory(); // Save updated inventory
-                                }
-                              },
-
+                              onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF6A1B9A),
+                                backgroundColor: Color(0xFFB239D3),
+                                padding: EdgeInsets.symmetric(horizontal: 5),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
                               ),
                               child: Text(
                                 "Adjust",
-                                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Colors.white, fontSize: 12),
                               ),
                             ),
                           ),

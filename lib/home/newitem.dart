@@ -80,7 +80,7 @@ class _NewItemPageState extends State<NewItemPage> {
                   border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(8),
                   image: _selectedImage != null
-                      ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover,)
+                      ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
                       : null,
                 ),
                 child: _selectedImage == null
