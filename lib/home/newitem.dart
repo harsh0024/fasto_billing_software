@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+
 class NewItemPage extends StatefulWidget {
   @override
   _NewItemPageState createState() => _NewItemPageState();
@@ -28,7 +29,7 @@ class _NewItemPageState extends State<NewItemPage> {
   }
 
   Future<void> _saveNewItem() async {
-    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _selectedImage == null) {
+    if (_nameController.text.isEmpty || _priceController.text.isEmpty ) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please enter all required details")),
       );
@@ -39,9 +40,9 @@ class _NewItemPageState extends State<NewItemPage> {
       "name": _nameController.text,
       "price": _priceController.text,
       "category": _selectedCategory ?? "Uncategorized",
-      "mrp": _mrpController.text,
-      "purchasePrice": _purchasePriceController.text,
-      "image": _selectedImage!.path, // Store image path
+      "mrp": _mrpController.text.isNotEmpty ? _mrpController.text : "0",
+      "purchasePrice": _purchasePriceController.text.isNotEmpty ? _purchasePriceController.text : "0",
+      "image": _selectedImage != null ? _selectedImage!.path : "", // Allow empty image
     };
 
     final prefs = await SharedPreferences.getInstance();

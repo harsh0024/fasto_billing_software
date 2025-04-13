@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'edititem.dart';
+
 class ModifyItemPage extends StatefulWidget {
-  final Map<String, dynamic> item;
+  Map<String, dynamic> item;
 
   ModifyItemPage({required this.item});
 
@@ -10,38 +12,56 @@ class ModifyItemPage extends StatefulWidget {
 }
 
 class _ModifyItemPageState extends State<ModifyItemPage> {
-  late TextEditingController nameController;
   late TextEditingController stockController;
-  late TextEditingController priceController;
+  late TextEditingController purchasePriceController;
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.item['name']);
     stockController = TextEditingController(text: widget.item['stock'].toString());
-    priceController = TextEditingController(text: widget.item['price'].toString());
+    purchasePriceController = TextEditingController(text: widget.item['purchasePrice']?.toString() ?? "");
   }
 
   @override
   void dispose() {
-    nameController.dispose();
     stockController.dispose();
-    priceController.dispose();
     super.dispose();
   }
 
   void saveChanges() {
     Navigator.pop(context, {
-      "name": nameController.text,
+      "name": widget.item['name'],
       "image": widget.item['image'],
       "stock": int.tryParse(stockController.text) ?? 0,
-      "price": int.tryParse(priceController.text) ?? 0,
+      "price": widget.item['price'],
+      "purchasePrice": widget.item['purchasePrice'] ?? 0, // Ensure value persists
     });
   }
 
-  void deleteItem() {
-    // Handle delete functionality
-    Navigator.pop(context, null);
+  void deleteItem() async {
+    bool? confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Deletion"),
+          content: Text("Are you sure you want to delete this item?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), // Cancel
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true), // Confirm Deletion
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      Navigator.pop(context, true); // Return true to indicate deletion
+    }
   }
 
   @override
@@ -57,7 +77,20 @@ class _ModifyItemPageState extends State<ModifyItemPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.edit),
-            onPressed: saveChanges,
+            onPressed: () async {
+              final updatedItem = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditItemPage(item: widget.item),
+                ),
+              );
+
+              if (updatedItem != null) {
+                setState(() {
+                  widget.item = updatedItem; // Update item details
+                });
+              }
+            },
           ),
           IconButton(
             icon: Icon(Icons.delete, color: Colors.white),
@@ -68,30 +101,16 @@ class _ModifyItemPageState extends State<ModifyItemPage> {
       body: Padding(
         padding: EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildTextField(nameController, "Item Name"),
-                  SizedBox(height: 20),
-                  _buildTextField(stockController, "Stock Quantity", isNumber: true),
-                  SizedBox(height: 20),
-                  _buildTextField(priceController, "Price (Rs.)", isNumber: true),
-                ],
-              ),
-            ),
+            Text("Selected Item:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text("Item Name : ${widget.item['name']}", style: TextStyle(fontSize: 16)),
+            Text("Sell Price : Rs.${widget.item['price']}", style: TextStyle(fontSize: 16)),
+            Text("Purchase Price : Rs.${widget.item['purchasePrice']}", style: TextStyle(fontSize: 16)),
+            // Text("Current Stock : ${widget.item['stock']}", style: TextStyle(fontSize: 16)),
+            SizedBox(height: 20),
+            _buildTextField(stockController, "Current Stock", isNumber: true),
             SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
@@ -121,7 +140,7 @@ class _ModifyItemPageState extends State<ModifyItemPage> {
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
-        labelText: label, // Label inside the field
+        labelText: label,
         labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black54),
         filled: true,
         fillColor: Colors.grey.shade100,

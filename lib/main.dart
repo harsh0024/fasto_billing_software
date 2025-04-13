@@ -1,12 +1,27 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'auth/signin.dart';
+import 'firebase_options.dart'; // Auto-generated file by Firebase CLI
+
 import 'auth/login.dart';
-import 'auth/createaccount.dart';// Import the CreateAccountPage
+import 'auth/createaccount.dart';
 import 'auth/dashboard.dart';
 import 'home/inventory.dart';
 import 'home/settings.dart';
-import 'home/history.dart';
+import 'home/transactions.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("Firebase initialization error: $e");
+  }
+
   runApp(const MyApp());
 }
 
@@ -21,16 +36,28 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // Define the initial route
-      home: const LoginPage(),
-      // Define named routes for navigation
+      home: AuthCheck(), // Check authentication status on startup
+      // Set initial page
       routes: {
         '/create-account': (context) => const CreateAccountPage(),
         '/dashboard': (context) => DashboardPage(),
-        '/inventory': (context) => InventoryPage(),  // Ensure SectionPage exists in section.dart
-        '/settings': (context) => SettingsPage(),  // Ensure SettingsPage exists in settings.dart
-        '/history': (context) => HistoryPage(),    // Ensure HistoryPage exists in history.dart
+        '/inventory': (context) => InventoryPage(),
+        '/settings': (context) =>  SettingsPage(),
+        '/history': (context) =>  TransactionsPage(),
       },
     );
+  }
+}
+
+class AuthCheck extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser; // Check if user is logged in
+
+    if (user != null) {
+      return DashboardPage(); // If user is logged in, go to Dashboard
+    } else {
+      return SignInPage(); // If no user, show login page
+    }
   }
 }
