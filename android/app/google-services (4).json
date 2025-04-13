@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "182741402476",
+    "project_id": "fastobillingsoftware",
+    "storage_bucket": "fastobillingsoftware.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182741402476:android:00db37e90f4107ec90a949",
+        "android_client_info": {
+          "package_name": "com.example.fasto_billing_software"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXi9iZbz7k9is-3q15oMGaey3dmwP4LDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'modifyitem.dart';
 import 'newitem.dart';
 
 class InventoryPage extends StatefulWidget {
@@ -10,40 +12,70 @@ class InventoryPage extends StatefulWidget {
 
 class _InventoryPageState extends State<InventoryPage> {
   List<Map<String, dynamic>> items = [
-    {'name': 'Samosa', 'price': 10, 'stock': 200, 'image': 'lib/images/samosa.png'},
-    {'name': 'Kachori', 'price': 15, 'stock': 200, 'image': 'lib/images/kachori.png'},
-    {'name': 'Pakode', 'price': 30, 'stock': 200, 'image': 'lib/images/pakode.jpg'},
-    {'name': 'Sambarvadi', 'price': 30, 'stock': 200, 'image': 'lib/images/sambarvadi.jpg'},
-    {'name': 'Chai', 'price': 10, 'stock': 200, 'image': 'lib/images/chai.png'},
+    {'name': 'Samosa', 'price': 20, 'stock': 50, 'image': 'lib/images/samosa.png'},
+    {'name': 'Kachori', 'price': 20, 'stock': 50, 'image': 'lib/images/kachori.png'},
+    {'name': 'Pakode', 'price': 30, 'stock': 50, 'image': 'lib/images/pakode.jpg'},
+    {'name': 'Sambarvadi', 'price': 25, 'stock': 50, 'image': 'lib/images/sambarvadi.jpg'},
+    {'name': 'Chai', 'price': 10, 'stock': 50, 'image': 'lib/images/chai.png'},
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadInventory();
+    _loadInventory(); // Load inventory when page opens
   }
 
   Future<void> _loadInventory() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> savedItems = prefs.getStringList("inventory_items") ?? [];
 
-    setState(() {
-      items.addAll(savedItems.map((item) => jsonDecode(item) as Map<String, dynamic>));
-    });
+    if (savedItems.isNotEmpty) {
+      setState(() {
+        items = savedItems.map((item) => jsonDecode(item)).toList().cast<Map<String, dynamic>>();
+      });
+    }
+
+    // ✅ Load sell prices separately for all items
+    for (var i = 0; i < items.length; i++) {
+      String itemName = items[i]['name']; // Use item name as key
+      String? savedPrice = prefs.getString('sell_price_$itemName');
+
+      if (savedPrice != null) {
+        setState(() {
+          items[i]['price'] = int.tryParse(savedPrice) ?? items[i]['price'];
+        });
+      }
+    }
   }
 
   Future<void> _saveInventory() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> savedItems = items.map((item) => jsonEncode(item)).toList();
+
     await prefs.setStringList("inventory_items", savedItems);
+
+    // ✅ Save sell prices separately
+    for (var item in items) {
+      await prefs.setString('sell_price_${item['name']}', item['price'].toString());
+    }
   }
 
-  void addItem(Map<String, dynamic> newItem) {
+
+
+
+  void addItem(Map<String, dynamic> newItem) async {
     setState(() {
       items.add(newItem);
     });
-    _saveInventory();
+
+    await _saveInventory(); // Save inventory data
+
+    // ✅ Ensure consistent key name (price, not rate)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('sell_price_${newItem['name']}', newItem['price'].toString());
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +88,17 @@ class _InventoryPageState extends State<InventoryPage> {
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+
         actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: InventorySearch(items),
+              );
+            },
+          ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: ElevatedButton(
@@ -153,13 +195,21 @@ class _InventoryPageState extends State<InventoryPage> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
+                          child: items[index]['image'].startsWith('lib/images/')
+                              ? Image.asset(
                             items[index]['image'],
+                            height: 60,
+                            width: 60,
+                            fit: BoxFit.cover,
+                          )
+                              : Image.file(
+                            File(items[index]['image']),
                             height: 60,
                             width: 60,
                             fit: BoxFit.cover,
                           ),
                         ),
+
                       ),
                       SizedBox(width: 10),
                       Expanded(
@@ -190,7 +240,31 @@ class _InventoryPageState extends State<InventoryPage> {
                             width: 90,
                             height: 30,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ModifyItemPage(item: items[index]),
+                                  ),
+                                );
+
+                                if (result == true) { // If item was deleted
+                                  setState(() {
+                                    items.removeAt(index); // Remove item from list
+                                  });
+                                  _saveInventory(); // Update storage
+                                } else if (result != null) { // If item was modified
+                                  setState(() {
+                                    items[index] = result;
+                                  });
+                                  _saveInventory();
+                                  // ✅ Save the updated sell price in SharedPreferences
+                                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                                  await prefs.setString('sell_price_${items[index]['name']}', result['price'].toString());
+                                }
+                              },
+
+
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFFB239D3),
                                 padding: EdgeInsets.symmetric(horizontal: 5),
@@ -217,3 +291,67 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 }
+
+class InventorySearch extends SearchDelegate {
+  final List<Map<String, dynamic>> items;
+
+  InventorySearch(this.items);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = ''; // Clear search input
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null); // Close search
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildSearchResults();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildSearchResults();
+  }
+
+  Widget _buildSearchResults() {
+    final searchResults = items
+        .where((item) => item['name'].toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    return ListView.builder(
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          leading: Image.asset(
+            searchResults[index]['image'],
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+          ),
+          title: Text(searchResults[index]['name']),
+          subtitle: Text("Rs ${searchResults[index]['price']} - Stock: ${searchResults[index]['stock']}"),
+          onTap: () {
+            close(context, searchResults[index]); // Select and close search
+          },
+        );
+      },
+    );
+  }
+}
+
